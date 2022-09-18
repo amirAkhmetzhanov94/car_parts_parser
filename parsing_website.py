@@ -1,5 +1,6 @@
 import pprint
 
+import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -37,17 +38,21 @@ class Parser:
                 }
             )
         pprint.pprint(self.list_of_links)
-        for parse_link in self.list_of_links:
+        for parse_link in self.list_of_links[:1]:
             number = self.get_number(parse_link.get("link"))
             parse_link["number"] = number
+        return self.list_of_links
 
     def get_number(self, link):
         self.driver.get(link)
         sleep(5)
-        number = self.driver.find_element(
-            By.CLASS_NAME, "js-phone"
-        ).find_element(
-            By.CLASS_NAME, "js-phone-number"
-        ).get_attribute("href").replace("tel:", "")
+        try:
+            number = self.driver.find_element(
+                By.CLASS_NAME, "js-phone"
+            ).find_element(
+                By.CLASS_NAME, "js-phone-number"
+            ).get_attribute("href").replace("tel:", "")
+        except selenium.common.exceptions.NoSuchElementException:
+            return
         return number
 
